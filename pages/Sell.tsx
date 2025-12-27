@@ -1,10 +1,23 @@
 
 import React, { useState } from 'react';
-import { Upload, DollarSign, Type, FileText, CheckCircle2, ChevronDown, Camera } from 'lucide-react';
+import { Upload, DollarSign, Type, FileText, CheckCircle2, ChevronDown, Camera, Sparkles, AlertCircle } from 'lucide-react';
+import { checkLegalCompliance } from '../lib/gemini';
 
 const Sell: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
+  const [itemName, setItemName] = useState('');
+  const [description, setDescription] = useState('');
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAiCheck = async () => {
+    if (!itemName) return;
+    setIsAnalyzing(true);
+    const result = await checkLegalCompliance(itemName, description);
+    setAiAnalysis(result || "لا يوجد تحليل متاح.");
+    setIsAnalyzing(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +33,7 @@ const Sell: React.FC = () => {
             <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter">تم الاستلام</h2>
             <p className="text-gray-500 mb-8 max-w-xs text-sm font-medium">سيتم مراجعة إعلانك من قبل فريقنا المختص لضمان المطابقة القانونية.</p>
             <button 
-                onClick={() => { setSubmitted(false); setActiveStep(1); }} 
+                onClick={() => { setSubmitted(false); setActiveStep(1); setAiAnalysis(null); }} 
                 className="px-8 py-3 bg-primary hover:bg-red-700 text-white rounded-lg font-black text-xs uppercase transition-all shadow-lg active:scale-95"
             >
                 إضافة إعلان آخر
@@ -39,7 +52,6 @@ const Sell: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Section 1: Basic Info */}
           <CollapsibleSection 
             title="معلومات القطعة" 
             icon={<Type size={18} />} 
@@ -50,8 +62,36 @@ const Sell: React.FC = () => {
             <div className="space-y-4">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest">اسم القطعة والموديل</label>
-                    <input type="text" required placeholder="Glock 19 Gen 5..." className="w-full bg-dark border border-gray-800 rounded-lg p-3 text-sm text-white font-bold focus:border-primary transition-all outline-none" />
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        required 
+                        value={itemName}
+                        onChange={(e) => setItemName(e.target.value)}
+                        placeholder="Glock 19 Gen 5..." 
+                        className="flex-grow bg-dark border border-gray-800 rounded-lg p-3 text-sm text-white font-bold focus:border-primary transition-all outline-none" 
+                      />
+                      <button 
+                        type="button"
+                        onClick={handleAiCheck}
+                        disabled={!itemName || isAnalyzing}
+                        className="bg-primary/20 hover:bg-primary/40 text-primary px-3 rounded-lg border border-primary/30 transition-all disabled:opacity-50"
+                        title="تحقق ذكي من الأنظمة"
+                      >
+                        {isAnalyzing ? <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div> : <Sparkles size={18} />}
+                      </button>
+                    </div>
                 </div>
+
+                {aiAnalysis && (
+                  <div className="bg-blue-900/20 border border-blue-800/50 p-4 rounded-xl text-xs text-blue-200 animate-slide-down">
+                    <div className="flex items-center gap-2 mb-2 font-black uppercase text-blue-400">
+                      <AlertCircle size={14} /> تحليل الذكاء الاصطناعي القانوني
+                    </div>
+                    {aiAnalysis}
+                  </div>
+                )}
+
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest">النوع / الفئة</label>
                     <select className="w-full bg-dark border border-gray-800 rounded-lg p-3 text-sm text-white font-bold focus:border-primary transition-all outline-none">
@@ -65,7 +105,6 @@ const Sell: React.FC = () => {
             </div>
           </CollapsibleSection>
 
-          {/* Section 2: Details and Price */}
           <CollapsibleSection 
             title="السعر والتفاصيل" 
             icon={<DollarSign size={18} />} 
@@ -80,13 +119,19 @@ const Sell: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest">وصف الحالة</label>
-                    <textarea rows={3} required placeholder="اذكر حالة القطعة بالتفصيل..." className="w-full bg-dark border border-gray-800 rounded-lg p-3 text-sm text-white font-medium focus:border-primary transition-all outline-none resize-none"></textarea>
+                    <textarea 
+                      rows={3} 
+                      required 
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="اذكر حالة القطعة بالتفصيل..." 
+                      className="w-full bg-dark border border-gray-800 rounded-lg p-3 text-sm text-white font-medium focus:border-primary transition-all outline-none resize-none"
+                    ></textarea>
                 </div>
                 <button type="button" onClick={(e) => { e.stopPropagation(); setActiveStep(3); }} className="w-full py-2.5 bg-gray-800 text-white font-black text-[10px] uppercase rounded-lg hover:bg-gray-700">التالي</button>
             </div>
           </CollapsibleSection>
 
-          {/* Section 3: Media */}
           <CollapsibleSection 
             title="الصور والتوثيق" 
             icon={<Camera size={18} />} 
