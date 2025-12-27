@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
@@ -7,21 +8,22 @@ import ProductDetail from './pages/ProductDetail';
 import Sell from './pages/Sell';
 import { Login, Register } from './pages/Auth';
 import { About, Privacy, Terms } from './pages/Static';
+import { PageRoute } from './types';
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path={PageRoute.HOME} element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="products" element={<Products />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="sell" element={<Sell />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="about" element={<About />} />
-          <Route path="privacy" element={<Privacy />} />
-          <Route path="terms" element={<Terms />} />
+          <Route path={PageRoute.PRODUCTS.substring(1)} element={<Products />} />
+          <Route path={PageRoute.PRODUCT_DETAIL.substring(1)} element={<ProductDetail />} />
+          <Route path={PageRoute.SELL.substring(1)} element={<Sell />} />
+          <Route path={PageRoute.LOGIN.substring(1)} element={<Login />} />
+          <Route path={PageRoute.REGISTER.substring(1)} element={<Register />} />
+          <Route path={PageRoute.ABOUT.substring(1)} element={<About />} />
+          <Route path={PageRoute.PRIVACY.substring(1)} element={<Privacy />} />
+          <Route path={PageRoute.TERMS.substring(1)} element={<Terms />} />
         </Route>
       </Routes>
     </Router>
